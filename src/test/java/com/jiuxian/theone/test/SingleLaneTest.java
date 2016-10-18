@@ -1,6 +1,5 @@
 package com.jiuxian.theone.test;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.jiuxian.theone.Guard;
@@ -29,8 +28,6 @@ public class SingleLaneTest {
 		};
 		SimpleSingleLane simpleSingleLane = new SimpleSingleLane(name, guard, process1);
 		simpleSingleLane.compete();
-
-		Assert.assertEquals("192.168.2.1", guard.competers(name).get(0));
 	}
 
 }
