@@ -1,5 +1,9 @@
 package com.jiuxian.theone.zk;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -10,12 +14,16 @@ import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.jiuxian.theone.Guard;
+import com.jiuxian.theone.util.LocalUtils;
 
 public class ZookeeperGuard implements Guard, AutoCloseable {
 
 	private static final String DEFAULT_ROOT = "/theone/guard";
+
+	private static final String COMPETERS = "competers";
 
 	private static final int HEART_BEAT = 10 * 1000;
 
@@ -54,6 +62,7 @@ public class ZookeeperGuard implements Guard, AutoCloseable {
 	public void auth(String gateName, int interval) {
 		String path = ZKPaths.makePath(root, gateName);
 		try {
+			validate(gateName);
 			while (true) {
 				Stat exists = client.checkExists().forPath(path);
 				if (exists == null) {
@@ -72,11 +81,53 @@ public class ZookeeperGuard implements Guard, AutoCloseable {
 		}
 	}
 
+	private void validate(String gateName) throws Exception {
+		String path = ZKPaths.makePath(root, gateName + "-" + COMPETERS);
+		if (client.checkExists().forPath(path) == null) {
+			LOGGER.info("Competers path {} not exists, create it.", path);
+			try {
+				client.create().creatingParentsIfNeeded().forPath(path);
+			} catch (NodeExistsException e) {
+				// Just ignore
+			}
+		}
+
+		String hostName = LocalUtils.getLocalIp();
+		String hostPath = ZKPaths.makePath(path, hostName);
+		if (client.checkExists().forPath(hostPath) != null) {
+			throw new RuntimeException("There is a instance of host " + hostName + " already.");
+		} else {
+			try {
+				client.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(hostPath);
+			} catch (NodeExistsException e) {
+				throw new RuntimeException("There is a instance of host " + hostName + " already.");
+			}
+		}
+
+		Preconditions.checkArgument(!COMPETERS.equals(gateName), "competers is reserve name, choose another one.");
+	}
+
 	@Override
 	public void close() throws Exception {
 		if (client != null) {
 			client.close();
 		}
+	}
+
+	@Override
+	public List<String> competers(String gateName) {
+		List<String> hosts = null;
+		String path = ZKPaths.makePath(root, gateName + "-" + COMPETERS);
+		try {
+			List<String> children = client.getChildren().forPath(path);
+			if (children != null && children.size() > 0) {
+				String prefixToRemove = path + "/";
+				hosts = children.stream().map(e -> StringUtils.removeStart(e, prefixToRemove)).collect(Collectors.toList());
+			}
+		} catch (Exception e) {
+			throw Throwables.propagate(e);
+		}
+		return hosts;
 	}
 
 }
