@@ -100,6 +100,7 @@ public class ZookeeperGuardProcess extends GuardProcess {
 
 	@Override
 	public void close() throws Exception {
+		super.close();
 		if (client != null) {
 			client.close();
 		}

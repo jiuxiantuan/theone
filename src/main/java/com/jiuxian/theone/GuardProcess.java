@@ -25,4 +25,11 @@ public abstract class GuardProcess implements Process {
 
 	protected abstract void fetchLock();
 
+	@Override
+	public void close() throws Exception {
+		if (process != null) {
+			process.close();
+		}
+	}
+
 }
