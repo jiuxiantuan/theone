@@ -1,7 +1,7 @@
 package com.jiuxian.theone;
 
 /**
- * 进程
+ * Process
  * 
  * @author <a href="mailto:wangyuxuan@jiuxian.com">Yuxuan Wang</a>
  *

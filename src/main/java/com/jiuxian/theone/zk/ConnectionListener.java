@@ -9,7 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 监听进程到zookeeper之间连接的网络状态，当网络失联时自杀
+ * Listener for zookeeper's disconnected event, and close the resource involved
+ * and kill itself when the event happens.
  * 
  * @author <a href="mailto:wangyuxuan@jiuxian.com">Yuxuan Wang</a>
  *

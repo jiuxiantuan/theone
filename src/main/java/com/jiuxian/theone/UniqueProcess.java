@@ -1,16 +1,16 @@
 package com.jiuxian.theone;
 
 /**
- * 只存活一个的进程
+ * Unique process in cluster
  * 
  * @author <a href="mailto:wangyuxuan@jiuxian.com">Yuxuan Wang</a>
  *
  */
-public abstract class GuardProcess implements Process {
+public abstract class UniqueProcess implements Process {
 
 	private Process process;
 
-	public GuardProcess(Process process) {
+	public UniqueProcess(Process process) {
 		super();
 		this.process = process;
 	}

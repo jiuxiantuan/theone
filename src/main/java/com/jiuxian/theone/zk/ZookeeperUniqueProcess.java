@@ -11,15 +11,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
-import com.jiuxian.theone.GuardProcess;
+import com.jiuxian.theone.UniqueProcess;
 import com.jiuxian.theone.Process;
 import com.jiuxian.theone.util.NetworkUtils;
 
 /**
+ * Process that guarantees uniqueness by zookeeper
+ * 
  * @author <a href="mailto:wangyuxuan@jiuxian.com">Yuxuan Wang</a>
  *
  */
-public class ZookeeperGuardProcess extends GuardProcess {
+public class ZookeeperUniqueProcess extends UniqueProcess {
 
 	private String zkroot;
 	private long interval;
@@ -31,31 +33,27 @@ public class ZookeeperGuardProcess extends GuardProcess {
 	private static final int DEFAULT_INTERVAL = 10 * 1000;
 	private static final String LOCK = "lock";
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperGuardProcess.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperUniqueProcess.class);
 
 	/**
 	 * @param process
-	 *            需要保证在集群内只存活一个的process
 	 * @param zks
-	 *            zookeeper集群地址，用于做实现锁
 	 */
-	public ZookeeperGuardProcess(Process process, String zks) {
+	public ZookeeperUniqueProcess(Process process, String zks) {
 		this(process, zks, DEFAULT_ROOT, HEART_BEAT, DEFAULT_INTERVAL);
 	}
 
 	/**
 	 * @param process
-	 *            需要保证在集群内只存活一个的process
 	 * @param zks
-	 *            zookeeper集群地址，用于做实现锁
 	 * @param zkroot
-	 *            锁保存的zookeeper根目录
+	 *            Zookeeper root for the lock
 	 * @param heartbeat
-	 *            zookeeper心跳检查间隔
+	 *            zookeeper heartbeat interval
 	 * @param interval
-	 *            锁竞争的间隔时间
+	 *            interval for lock competition
 	 */
-	public ZookeeperGuardProcess(Process process, String zks, String zkroot, int heartbeat, int interval) {
+	public ZookeeperUniqueProcess(Process process, String zks, String zkroot, int heartbeat, int interval) {
 		super(process);
 		this.zkroot = zkroot;
 		this.interval = interval;
