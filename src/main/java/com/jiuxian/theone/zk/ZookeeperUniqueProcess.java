@@ -37,7 +37,9 @@ public class ZookeeperUniqueProcess extends UniqueProcess {
 
 	/**
 	 * @param process
+	 *            process to be unique
 	 * @param zks
+	 *            zookeeper address
 	 */
 	public ZookeeperUniqueProcess(Process process, String zks) {
 		this(process, zks, DEFAULT_ROOT, HEART_BEAT, DEFAULT_INTERVAL);
@@ -45,7 +47,9 @@ public class ZookeeperUniqueProcess extends UniqueProcess {
 
 	/**
 	 * @param process
+	 *            process to be unique
 	 * @param zks
+	 *            zookeeper address
 	 * @param zkroot
 	 *            Zookeeper root for the lock
 	 * @param heartbeat
