@@ -31,14 +31,22 @@ import com.jiuxian.theone.Process;
 import com.jiuxian.theone.util.NetworkUtils;
 
 /**
- * Process that guarantees uniqueness by zookeeper
+ * Process that guarantees uniqueness by zookeeper<br>
+ * Processes with be grouped by zkroot, and there will be only one process alive
+ * in each group
  * 
  * @author <a href="mailto:wangyuxuan@jiuxian.com">Yuxuan Wang</a>
  *
  */
 public class ZookeeperUniqueProcess extends UniqueProcess {
 
+	/**
+	 * zookeeper root for the lock
+	 */
 	private String zkroot;
+	/**
+	 * interval for lock competition
+	 */
 	private long interval;
 
 	private CuratorFramework client;
@@ -66,7 +74,7 @@ public class ZookeeperUniqueProcess extends UniqueProcess {
 	 * @param zks
 	 *            zookeeper address
 	 * @param zkroot
-	 *            Zookeeper root for the lock
+	 *            zookeeper root for the lock
 	 * @param heartbeat
 	 *            zookeeper heartbeat interval
 	 * @param interval
