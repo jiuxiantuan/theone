@@ -12,10 +12,8 @@ public class ProcessTest {
 	public void test() {
 		String zks = "192.168.5.99,192.168.5.104";
 		Process process = new SimpleProcess();
-		UniqueProcess guard = new ZookeeperUniqueProcess(process, zks);
-		guard.run();
-		try {
-			guard.close();
+		try (UniqueProcess guard = new ZookeeperUniqueProcess(process, zks, "group1")) {
+			guard.run();
 		} catch (Exception e) {
 		}
 	}

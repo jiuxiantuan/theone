@@ -32,10 +32,8 @@ public abstract class UniqueProcess implements Process {
 
 	@Override
 	public void run() {
-
 		fetchLock();
 		process.run();
-
 	}
 
 	protected abstract void fetchLock();

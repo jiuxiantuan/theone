@@ -26,14 +26,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
-import com.jiuxian.theone.UniqueProcess;
 import com.jiuxian.theone.Process;
+import com.jiuxian.theone.UniqueProcess;
 import com.jiuxian.theone.util.NetworkUtils;
 
 /**
  * Process that guarantees uniqueness by zookeeper<br>
- * Processes with be grouped by zkroot, and there will be only one process alive
- * in each group
+ * Processes with be grouped by value of group, and there will be only one
+ * process alive in each group
  * 
  * @author <a href="mailto:wangyuxuan@jiuxian.com">Yuxuan Wang</a>
  *
@@ -43,7 +43,7 @@ public class ZookeeperUniqueProcess extends UniqueProcess {
 	/**
 	 * zookeeper root for the lock
 	 */
-	private String zkroot;
+	private String group;
 	/**
 	 * interval for lock competition
 	 */
@@ -51,10 +51,11 @@ public class ZookeeperUniqueProcess extends UniqueProcess {
 
 	private CuratorFramework client;
 
-	private static final String DEFAULT_ROOT = "/theone/guard";
+	private static final String ZK_ROOT = "/theone";
 	private static final int HEART_BEAT = 10 * 1000;
 	private static final int DEFAULT_INTERVAL = 10 * 1000;
 	private static final String LOCK = "lock";
+	private static final String DEFAULT_GROUP = "default";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperUniqueProcess.class);
 
@@ -65,7 +66,7 @@ public class ZookeeperUniqueProcess extends UniqueProcess {
 	 *            zookeeper address
 	 */
 	public ZookeeperUniqueProcess(Process process, String zks) {
-		this(process, zks, DEFAULT_ROOT, HEART_BEAT, DEFAULT_INTERVAL);
+		this(process, zks, DEFAULT_GROUP);
 	}
 
 	/**
@@ -73,16 +74,28 @@ public class ZookeeperUniqueProcess extends UniqueProcess {
 	 *            process to be unique
 	 * @param zks
 	 *            zookeeper address
-	 * @param zkroot
-	 *            zookeeper root for the lock
+	 * @param group
+	 *            group for the lock
+	 */
+	public ZookeeperUniqueProcess(Process process, String zks, String group) {
+		this(process, zks, group, HEART_BEAT, DEFAULT_INTERVAL);
+	}
+
+	/**
+	 * @param process
+	 *            process to be unique
+	 * @param zks
+	 *            zookeeper address
+	 * @param group
+	 *            group for the lock
 	 * @param heartbeat
 	 *            zookeeper heartbeat interval
 	 * @param interval
 	 *            interval for lock competition
 	 */
-	public ZookeeperUniqueProcess(Process process, String zks, String zkroot, int heartbeat, int interval) {
+	public ZookeeperUniqueProcess(Process process, String zks, String group, int heartbeat, int interval) {
 		super(process);
-		this.zkroot = zkroot;
+		this.group = group;
 		this.interval = interval;
 
 		client = CuratorFrameworkFactory.newClient(zks, heartbeat, heartbeat, new ExponentialBackoffRetry(1000, 3));
@@ -90,10 +103,12 @@ public class ZookeeperUniqueProcess extends UniqueProcess {
 		connectionListener.setResource(process);
 		client.getCuratorListenable().addListener(connectionListener);
 		client.start();
+
+		final String lockPath = ZKPaths.makePath(ZK_ROOT, group);
 		try {
-			if (client.checkExists().forPath(zkroot) == null) {
-				LOGGER.info("Root {} not exists, create it.", zkroot);
-				client.create().creatingParentsIfNeeded().forPath(zkroot);
+			if (client.checkExists().forPath(lockPath) == null) {
+				LOGGER.info("Lock path {} not exists, create it.", lockPath);
+				client.create().creatingParentsIfNeeded().forPath(lockPath);
 			}
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);
@@ -103,13 +118,13 @@ public class ZookeeperUniqueProcess extends UniqueProcess {
 
 	@Override
 	protected void fetchLock() {
-		String path = ZKPaths.makePath(zkroot, LOCK);
+		final String lockNode = ZKPaths.makePath(ZKPaths.makePath(ZK_ROOT, group), LOCK);
 		try {
 			while (true) {
-				Stat exists = client.checkExists().forPath(path);
+				Stat exists = client.checkExists().forPath(lockNode);
 				if (exists == null) {
 					try {
-						client.create().withMode(CreateMode.EPHEMERAL).forPath(path, NetworkUtils.getLocalIp().getBytes());
+						client.create().withMode(CreateMode.EPHEMERAL).forPath(lockNode, NetworkUtils.getLocalIp().getBytes());
 						break;
 					} catch (NodeExistsException e) {
 						LOGGER.error(e.getMessage(), e);

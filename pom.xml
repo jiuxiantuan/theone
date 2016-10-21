@@ -9,7 +9,7 @@
 
 	<groupId>com.jiuxian</groupId>
 	<artifactId>theone</artifactId>
-	<version>1.2.1-RELEASE</version>
+	<version>1.2.2-RELEASE</version>
 	<description>High-Avaliable Distributed Schedule System</description>
 	<url>https://github.com/jiuxiantuan/mossrose</url>
 	<licenses>
