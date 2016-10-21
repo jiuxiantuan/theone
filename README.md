@@ -1,4 +1,4 @@
-# thone
+# theone
 <h3>A tool to make a process having only one instance in a cluster</h3>
 
 <hr>
