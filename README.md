@@ -7,6 +7,15 @@
 
 * Zookeeper
 * Java 8
+ 
+## Installation
+<pre><code>
+&lt;dependency&gt;
+  &lt;groupId&gt;com.jiuxian&lt;/groupId&gt;
+  &lt;artifactId&gt;theone&lt;/artifactId&gt;
+  &lt;version&gt;1.2.1-RELEASE&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
 
 ## Key concept
 
