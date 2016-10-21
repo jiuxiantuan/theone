@@ -13,7 +13,7 @@
 <dependency>
   <groupId>com.jiuxian</groupId>
   <artifactId>theone</artifactId>
-  <version>1.2.1-RELEASE</version>
+  <version>1.2.2-RELEASE</version>
 </dependency>
 ```
 
@@ -46,8 +46,10 @@ public class SimpleProcess implements Process {
 
 #### Wrap the process with UniqueProcess
 ```
-	String zks = "localhost"; // zookeeper 集群地址
-	Process process = new SimpleProcess();
-	UniqueProcess guard = new ZookeeperUniqueProcess(process, zks);
-	guard.run();
+		String zks = "192.168.5.99,192.168.5.104";
+		Process process = new SimpleProcess();
+		try (UniqueProcess guard = new ZookeeperUniqueProcess(process, zks, "group1")) {
+			guard.run();
+		} catch (Exception e) {
+		}
 ```
