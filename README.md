@@ -9,13 +9,13 @@
 * Java 8
  
 ## Installation
-<pre><code>
-&lt;dependency&gt;
-  &lt;groupId&gt;com.jiuxian&lt;/groupId&gt;
-  &lt;artifactId&gt;theone&lt;/artifactId&gt;
-  &lt;version&gt;1.2.1-RELEASE&lt;/version&gt;
-&lt;/dependency&gt;
-</code></pre>
+```
+<dependency>
+  <groupId>com.jiuxian</groupId>
+  <artifactId>theone</artifactId>
+  <version>1.2.1-RELEASE</version>
+</dependency>
+```
 
 ## Key concept
 
@@ -28,10 +28,10 @@
 ## Quick Start
 
 #### Implement a simple process
-<pre><code>
+```
 public class SimpleProcess implements Process {
     
-	@Override
+    @Override
 	public void run() {
 		System.out.println("This is a process example.");
 	}
@@ -42,12 +42,12 @@ public class SimpleProcess implements Process {
 	}
 
 }
-</code></pre>
+```
 
 #### Wrap the process with UniqueProcess
-<pre><code>
+```
 	String zks = "localhost"; // zookeeper 集群地址
 	Process process = new SimpleProcess();
 	UniqueProcess guard = new ZookeeperUniqueProcess(process, zks);
 	guard.run();
-</code></pre>
+```
