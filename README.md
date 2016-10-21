@@ -46,7 +46,7 @@ public class SimpleProcess implements Process {
 
 #### Wrap the process with UniqueProcess
 <pre><code>
-	String zks = "192.168.5.99,192.168.5.104";
+	String zks = "localhost"; // zookeeper 集群地址
 	Process process = new SimpleProcess();
 	UniqueProcess guard = new ZookeeperUniqueProcess(process, zks);
 	guard.run();
