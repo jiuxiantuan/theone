@@ -13,7 +13,7 @@
 <dependency>
   <groupId>com.jiuxian</groupId>
   <artifactId>theone</artifactId>
-  <version>1.2.2-RELEASE</version>
+  <version>1.2.3-RELEASE</version>
 </dependency>
 ```
 
