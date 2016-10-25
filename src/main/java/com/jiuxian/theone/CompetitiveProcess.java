@@ -21,18 +21,21 @@ package com.jiuxian.theone;
  * @author <a href="mailto:wangyuxuan@jiuxian.com">Yuxuan Wang</a>
  *
  */
-public abstract class CompetitiveProcess implements Process, Competitive {
+public class CompetitiveProcess implements AutoCloseable {
 
 	private Process process;
 
-	public CompetitiveProcess(Process process) {
+	private Competitive competitive;
+
+	public CompetitiveProcess(Process process, Competitive competitive) {
 		super();
 		this.process = process;
+		this.competitive = competitive;
+		competitive.registerCorrelativeResource(process);
 	}
 
-	@Override
 	public void run() {
-		fetchLock();
+		competitive.fetchLock();
 		process.run();
 	}
 
@@ -40,6 +43,10 @@ public abstract class CompetitiveProcess implements Process, Competitive {
 	public void close() throws Exception {
 		if (process != null) {
 			process.close();
+		}
+
+		if (competitive != null) {
+			competitive.close();
 		}
 	}
 

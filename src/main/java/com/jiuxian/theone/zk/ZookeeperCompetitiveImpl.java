@@ -25,19 +25,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
-import com.jiuxian.theone.Process;
-import com.jiuxian.theone.CompetitiveProcess;
+import com.jiuxian.theone.Competitive;
 import com.jiuxian.theone.util.NetworkUtils;
 
 /**
- * Process that guarantees uniqueness by zookeeper<br>
+ * Competitive implementation that guarantees uniqueness by zookeeper<br>
  * Processes with be grouped by value of group, and there will be only one
  * process alive in each group
  * 
  * @author <a href="mailto:wangyuxuan@jiuxian.com">Yuxuan Wang</a>
  *
  */
-public class ZookeeperCompetitiveProcess extends CompetitiveProcess {
+public class ZookeeperCompetitiveImpl implements Competitive {
 
 	/**
 	 * zookeeper root for the lock
@@ -49,6 +48,7 @@ public class ZookeeperCompetitiveProcess extends CompetitiveProcess {
 	private long interval;
 
 	private CuratorFramework client;
+	private ConnectionListener connectionListener;
 
 	private static final String ZK_ROOT = "/theone";
 	private static final int HEART_BEAT = 10 * 1000;
@@ -56,33 +56,27 @@ public class ZookeeperCompetitiveProcess extends CompetitiveProcess {
 	private static final String LOCK = "lock";
 	private static final String DEFAULT_GROUP = "default";
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperCompetitiveProcess.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperCompetitiveImpl.class);
 
 	/**
-	 * @param process
-	 *            process to be unique
 	 * @param zks
 	 *            zookeeper address
 	 */
-	public ZookeeperCompetitiveProcess(Process process, String zks) {
-		this(process, zks, DEFAULT_GROUP);
+	public ZookeeperCompetitiveImpl(String zks) {
+		this(zks, DEFAULT_GROUP);
 	}
 
 	/**
-	 * @param process
-	 *            process to be unique
 	 * @param zks
 	 *            zookeeper address
 	 * @param group
 	 *            group for the lock
 	 */
-	public ZookeeperCompetitiveProcess(Process process, String zks, String group) {
-		this(process, zks, group, HEART_BEAT, DEFAULT_INTERVAL);
+	public ZookeeperCompetitiveImpl(String zks, String group) {
+		this(zks, group, HEART_BEAT, DEFAULT_INTERVAL);
 	}
 
 	/**
-	 * @param process
-	 *            process to be unique
 	 * @param zks
 	 *            zookeeper address
 	 * @param group
@@ -92,14 +86,13 @@ public class ZookeeperCompetitiveProcess extends CompetitiveProcess {
 	 * @param interval
 	 *            interval for lock competition
 	 */
-	public ZookeeperCompetitiveProcess(Process process, String zks, String group, int heartbeat, int interval) {
-		super(process);
+	public ZookeeperCompetitiveImpl(String zks, String group, int heartbeat, int interval) {
+		super();
 		this.group = group;
 		this.interval = interval;
 
 		client = CuratorFrameworkFactory.newClient(zks, heartbeat, heartbeat, new ExponentialBackoffRetry(1000, 3));
-		ConnectionListener connectionListener = new ConnectionListener();
-		connectionListener.setResource(process);
+		connectionListener = new ConnectionListener();
 		client.getCuratorListenable().addListener(connectionListener);
 		client.start();
 
@@ -137,8 +130,7 @@ public class ZookeeperCompetitiveProcess extends CompetitiveProcess {
 	}
 
 	@Override
-	public void close() throws Exception {
-		super.close();
+	public void close() {
 		if (client != null) {
 			client.close();
 		}
@@ -158,5 +150,10 @@ public class ZookeeperCompetitiveProcess extends CompetitiveProcess {
 			LOGGER.error(e.getMessage(), e);
 		}
 		return null;
+	}
+
+	@Override
+	public void registerCorrelativeResource(AutoCloseable resource) {
+		connectionListener.setResource(resource);
 	}
 }

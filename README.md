@@ -13,7 +13,7 @@
 <dependency>
   <groupId>com.jiuxian</groupId>
   <artifactId>theone</artifactId>
-  <version>1.3.0-RELEASE</version>
+  <version>1.4.0-RELEASE</version>
 </dependency>
 ```
 
@@ -21,8 +21,8 @@
 
 * Process
  * 进程
-* UniqueProcess
- * 用于包装进程，保证进程在集群中只有惟一一份实例在运行
+* Competitive
+ * 进程的可竞争性实现，用于保证进程在集群中只有惟一一份实例在运行
 
 
 ## Quick Start
@@ -48,7 +48,8 @@ public class SimpleProcess implements Process {
 ```
 		String zks = "localhost";
 		Process process = new SimpleProcess();
-		try (CompetitiveProcess guard = new ZookeeperCompetitiveProcess(process, zks, "group1")) {
+		Competitive competitive = new ZookeeperCompetitiveImpl(zks, "group1");
+		try (CompetitiveProcess guard = new CompetitiveProcess(process, competitive)) {
 			guard.run();
 		} catch (Exception e) {
 		}

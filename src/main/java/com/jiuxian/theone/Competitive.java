@@ -15,7 +15,7 @@
  */
 package com.jiuxian.theone;
 
-public interface Competitive {
+public interface Competitive extends AutoCloseable {
 
 	/**
 	 * Try to fetch the lock
@@ -28,5 +28,13 @@ public interface Competitive {
 	 * @return the locker
 	 */
 	String currentLocker();
+
+	/**
+	 * Register correlative resource that must be closed before the competitive
+	 * implementation shutdown
+	 * 
+	 * @param resource
+	 */
+	void registerCorrelativeResource(AutoCloseable resource);
 
 }
