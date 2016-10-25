@@ -21,11 +21,11 @@ package com.jiuxian.theone;
  * @author <a href="mailto:wangyuxuan@jiuxian.com">Yuxuan Wang</a>
  *
  */
-public abstract class UniqueProcess implements Process {
+public abstract class CompetitiveProcess implements Process, Competitive {
 
 	private Process process;
 
-	public UniqueProcess(Process process) {
+	public CompetitiveProcess(Process process) {
 		super();
 		this.process = process;
 	}
@@ -35,8 +35,6 @@ public abstract class UniqueProcess implements Process {
 		fetchLock();
 		process.run();
 	}
-
-	protected abstract void fetchLock();
 
 	@Override
 	public void close() throws Exception {

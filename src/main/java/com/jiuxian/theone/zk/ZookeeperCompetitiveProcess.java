@@ -21,13 +21,12 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
-import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
 import com.jiuxian.theone.Process;
-import com.jiuxian.theone.UniqueProcess;
+import com.jiuxian.theone.CompetitiveProcess;
 import com.jiuxian.theone.util.NetworkUtils;
 
 /**
@@ -38,7 +37,7 @@ import com.jiuxian.theone.util.NetworkUtils;
  * @author <a href="mailto:wangyuxuan@jiuxian.com">Yuxuan Wang</a>
  *
  */
-public class ZookeeperUniqueProcess extends UniqueProcess {
+public class ZookeeperCompetitiveProcess extends CompetitiveProcess {
 
 	/**
 	 * zookeeper root for the lock
@@ -57,7 +56,7 @@ public class ZookeeperUniqueProcess extends UniqueProcess {
 	private static final String LOCK = "lock";
 	private static final String DEFAULT_GROUP = "default";
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperUniqueProcess.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperCompetitiveProcess.class);
 
 	/**
 	 * @param process
@@ -65,7 +64,7 @@ public class ZookeeperUniqueProcess extends UniqueProcess {
 	 * @param zks
 	 *            zookeeper address
 	 */
-	public ZookeeperUniqueProcess(Process process, String zks) {
+	public ZookeeperCompetitiveProcess(Process process, String zks) {
 		this(process, zks, DEFAULT_GROUP);
 	}
 
@@ -77,7 +76,7 @@ public class ZookeeperUniqueProcess extends UniqueProcess {
 	 * @param group
 	 *            group for the lock
 	 */
-	public ZookeeperUniqueProcess(Process process, String zks, String group) {
+	public ZookeeperCompetitiveProcess(Process process, String zks, String group) {
 		this(process, zks, group, HEART_BEAT, DEFAULT_INTERVAL);
 	}
 
@@ -93,7 +92,7 @@ public class ZookeeperUniqueProcess extends UniqueProcess {
 	 * @param interval
 	 *            interval for lock competition
 	 */
-	public ZookeeperUniqueProcess(Process process, String zks, String group, int heartbeat, int interval) {
+	public ZookeeperCompetitiveProcess(Process process, String zks, String group, int heartbeat, int interval) {
 		super(process);
 		this.group = group;
 		this.interval = interval;
@@ -117,12 +116,11 @@ public class ZookeeperUniqueProcess extends UniqueProcess {
 	}
 
 	@Override
-	protected void fetchLock() {
+	public void fetchLock() {
 		final String lockNode = ZKPaths.makePath(ZKPaths.makePath(ZK_ROOT, group), LOCK);
 		try {
 			while (true) {
-				Stat exists = client.checkExists().forPath(lockNode);
-				if (exists == null) {
+				if (client.checkExists().forPath(lockNode) == null) {
 					try {
 						client.create().withMode(CreateMode.EPHEMERAL).forPath(lockNode, NetworkUtils.getLocalIp().getBytes());
 						break;
@@ -144,5 +142,21 @@ public class ZookeeperUniqueProcess extends UniqueProcess {
 		if (client != null) {
 			client.close();
 		}
+	}
+
+	@Override
+	public String currentLocker() {
+		final String lockNode = ZKPaths.makePath(ZKPaths.makePath(ZK_ROOT, group), LOCK);
+		try {
+			if (client.checkExists().forPath(lockNode) != null) {
+				byte[] data = client.getData().forPath(lockNode);
+				if (data != null) {
+					return new String(data);
+				}
+			}
+		} catch (Exception e) {
+			LOGGER.error(e.getMessage(), e);
+		}
+		return null;
 	}
 }
