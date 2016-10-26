@@ -15,6 +15,8 @@
  */
 package com.jiuxian.theone;
 
+import com.google.common.base.Preconditions;
+
 /**
  * Unique process in cluster
  * 
@@ -29,8 +31,8 @@ public class CompetitiveProcess implements AutoCloseable {
 
 	public CompetitiveProcess(Process process, Competitive competitive) {
 		super();
-		this.process = process;
-		this.competitive = competitive;
+		this.process = Preconditions.checkNotNull(process);
+		this.competitive = Preconditions.checkNotNull(competitive);
 		competitive.registerCorrelativeResource(process);
 	}
 
