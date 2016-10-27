@@ -17,7 +17,7 @@ package com.jiuxian.theone.zk;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.curator.retry.BoundedExponentialBackoffRetry;
 import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
@@ -91,7 +91,7 @@ public class ZookeeperCompetitiveImpl implements Competitive {
 		this.group = group;
 		this.interval = interval;
 
-		client = CuratorFrameworkFactory.newClient(zks, heartbeat, heartbeat, new ExponentialBackoffRetry(1000, 3));
+		client = CuratorFrameworkFactory.newClient(zks, heartbeat, heartbeat, new BoundedExponentialBackoffRetry(1000, 8000, 4));
 		connectionListener = new ConnectionListener();
 		client.getCuratorListenable().addListener(connectionListener);
 		client.start();
