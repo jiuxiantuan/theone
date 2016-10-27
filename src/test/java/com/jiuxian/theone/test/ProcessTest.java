@@ -14,10 +14,8 @@ public class ProcessTest {
 		String zks = "192.168.5.99,192.168.5.104";
 		Process process = new SimpleProcess();
 		Competitive competitive = new ZookeeperCompetitiveImpl(zks, "group1");
-		try (CompetitiveProcess guard = new CompetitiveProcess(process, competitive)) {
-			guard.run();
-		} catch (Exception e) {
-		}
+		CompetitiveProcess guard = new CompetitiveProcess(process, competitive);
+		guard.run();
 	}
 
 }

@@ -23,7 +23,7 @@ import com.google.common.base.Preconditions;
  * @author <a href="mailto:wangyuxuan@jiuxian.com">Yuxuan Wang</a>
  *
  */
-public class CompetitiveProcess implements AutoCloseable {
+public class CompetitiveProcess {
 
 	private Process process;
 
@@ -39,17 +39,6 @@ public class CompetitiveProcess implements AutoCloseable {
 	public void run() {
 		competitive.fetchLock();
 		process.run();
-	}
-
-	@Override
-	public void close() throws Exception {
-		if (process != null) {
-			process.close();
-		}
-
-		if (competitive != null) {
-			competitive.close();
-		}
 	}
 
 }
